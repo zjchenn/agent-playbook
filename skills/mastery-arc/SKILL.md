@@ -1,318 +1,112 @@
 ---
 name: mastery-arc
 description: >
-  Run bounded, evidence-backed teaching sessions when the user explicitly
-  wants to learn, understand, review, be quizzed, walk through code, or
-  debrief completed work. Trigger phrases include 学习、理解、复习、考我、
-  带我读、教学模式、learn, teach me, quiz me, walk me through, and debrief,
-  as well as explicit $mastery-arc learn|coding|review|debrief invocations.
-  Build a dependency map, explain without skipped reasoning, maintain explicit
-  scope and stopping boundaries, close automatically, and save a session
-  record.
-  Do not use when the primary goal is implementation, debugging, editing,
-  testing, or an answer-only response unless the user explicitly asks for a
-  teaching session.
+  仅当用户显式调用 $mastery-arc、要求使用 mastery-arc，或明确要求进入教学模式时，
+  运行有范围、有前置知识检查、可自动结束并落盘的学习会话。支持 learn、coding、
+  review、debrief 四种模式。不要仅因用户要求解释、回答、实现、调试或测试而自动启用。
 ---
 
 # Mastery Arc
 
-Treat this file as the authoritative procedure. Before the first teaching
-response, read `LEARNING.md` completely. Read
-`references/session-note-template.md` when preparing the closing record.
-Follow the user's current explicit instructions over this procedure.
+本文件是执行协议。首次教学前完整阅读 `LEARNING.md`；用户当前的明确要求优先。
 
-## Run a bounded state machine
+## 通用流程
 
-Use exactly this lifecycle:
+1. 选择一个主模式。用户未指定模式时，根据显式教学目标在四种模式中选择；切换模式时更新学习地图，不静默混合。
+2. 明确目标、已有基础、范围、完成标准和记录目录，建立依赖有序且有终点的学习地图。大主题拆成多个有限阶段，不设置固定问题数或轮数。
+3. 在开始任何教学或提问前执行前置知识门禁。
+4. 按主模式处理当前节点：`learn`、`coding` 先完整讲清再检查；`review` 先闭卷检索再补缺口；`debrief` 先依据证据重建事实与决策，再用 Why、What-if 检查理解。根据结果推进、补桥或调整支架。
+5. 每轮必须推进地图中的明确节点。地图只在开始、阶段切换、范围变化和结束时展示。
+6. 达到结束条件后立即总结并落盘，不再追加教学或开放式问题。
 
-```text
-Scope -> Map -> (Teach -> Verify -> Advance unit or phase)* -> Close -> Persist -> Stop
-```
+学习地图至少包含当前阶段、必学节点、完成标准和待学习列表。普通追问只用于澄清当前节点；必要前置知识作为桥接节点加入地图；相邻但非必要内容进入待学习列表。只有用户明确扩展范围时才修改目标或阶段边界。
 
-Do not add new teaching after entering `Close`. Use either one question or a
-compact series of related questions when a checkpoint benefits from them; do
-not end every response with a checkpoint by default.
+## 前置知识门禁
 
-## Select one primary mode
+教学或提问前，在内部主动检查当前节点直接依赖的全部前置知识，包括概念、术语、事实、中间结论和示例上下文；Coding 模式还包括关键符号、调用关系、数据结构、shape 和状态背景。
 
-Honor an explicitly requested mode. Otherwise select:
+每项前置知识必须满足至少一项：
 
-- `coding` for understanding source code, runtime behavior, architecture, or a
-  patch rather than merely changing it;
-- `review` for closed-book retrieval from an earlier session record;
-- `debrief` for extracting lessons from work that is already complete;
-- `learn` for every other new or incompletely understood topic.
+- 已在会话中讲解或展示；
+- 已从用户提供的资料或源码中明确指出；
+- 用户明确确认已经掌握。
 
-Do not silently combine modes. A mode switch requires an explicit user request
-and a revised session map.
+默认只在会话开始、发现缺失或用户询问时展示检查结果，但不能因未展示而跳过检查。不能因为内容看似基础而默认用户知道。发现缺失时，暂停当前节点，将缺失内容作为桥接节点加入地图，完整补齐后再返回。任何问题都必须能从已给出或已确认掌握的内容中推导，不能要求用户猜测未教知识。
 
-## 1. Scope the session
+## 教学、检查与证据
 
-Inspect the minimum sources needed to understand the requested boundary before
-teaching details. Ask one compact diagnostic set only when the answers would
-materially change the route. Group only questions about the same prerequisite
-or starting-state decision. If the user has already stated their level or says
-a prerequisite is unfamiliar, believe them and provide scaffolding instead of
-asking them to guess.
+- 需要讲解时先完成一个连续节点；不要用一串微问题代替缺失的讲解。
+- 相关问题可以成组提出；如果前一问的答案会决定后一问的内容、提示或难度，则拆成多轮。
+- 用户回答错误时，指出缺口，改变示例、支架或表示方式，补齐后重新检索；不要原样重复问题。
+- 区分源码或资料直接支持的证据、运行验证、合理推断和未验证假设。证据不足时说明假设及最小验证方法。
+- 若不同支架仍无法产生新理解或进展，将节点记为待复习并结束为 `partial`，不要无限追问。
 
-Create a compact learning contract before the first detailed explanation:
+## 四种模式
 
-- the primary mode and a finite set of objectives;
-- the user's known starting point and any explicit assumptions;
-- a dependency-ordered map of `must-cover` units, grouped into ordered phases
-  when the scope is broad;
-- an explicit `out-of-scope` list and an initially empty parking lot;
-- a mastery check for each objective;
-- any user-specified time or turn boundary and the intended record directory.
+### `learn`：建立新知识模型
 
-Show the contract and continue without waiting for confirmation unless genuine
-ambiguity would produce materially different lessons.
+- 用于学习新概念、理论、机制或方法。
+- 先确定前置知识和概念依赖，再按 What、Why、What-if 建立因果模型。
+- 对陌生主题先提供完整示例或必要讲解，不要求用户猜未教过的知识。
+- 检查重点是复述、推导、举例、反例和条件变化后的迁移。
+- 结束产物是可独立重建的概念模型，而不是资料摘要。
 
-Do not impose a numerical question or round limit by default. Derive the number
-of rounds from the declared map. For a broad goal, build a multi-phase
-curriculum: give every phase a finite boundary, dependency order, and mastery
-evidence, then repeat `Teach -> Verify -> Advance map` until the declared scope
-is complete. Do not close merely because the session has used many rounds.
+### `coding`：理解当前代码实现
 
-A checkpoint may contain one question or a compact series of related
-questions. Batch questions only when they test the same unit or objective, use
-the same taught context, and do not require feedback between subquestions.
-Split them across rounds when an earlier answer determines the next hint or
-question. Honor a numerical or time boundary only when the user supplies one
-or when an external task constraint requires it.
+- 用于阅读源码、理解实现、调用链、数据流和设计机制。
+- 默认以用户提供的代码、路径或当前工作区 checkout 为事实基线。
+- 若用户提供了 commit、branch、tag 或源码版本，只记录到学习笔记；不把版本核对和差异分析扩展成教学主线。
+- 未提供版本时直接使用当前工作区，不因追查版本而阻塞学习。
+- 默认沿一条代表性实现路径连续讲解：`入口与触发条件 → 调用链 → 数据与 shape → 状态生命周期 → 输出或副作用 → 失败边界`
+- 对跨函数或文件、会改变 binding、dispatch、mapping、数据或状态、同步、持久化或输出的语义边，必须说明 caller/callee、分支条件、传递数据以及转换机制。其余透明 forwarding 可以折叠，但要指出省略范围并说明为什么安全。
+- 用户指出跳步时，回到最后理解的节点，补齐缺失的语义边再继续；同一回复不追加无关检查问题。
+- 目标是建立当前实现的运行心智模型和设计理解，不主动比较 upstream、历史版本、其他分支或替代实现。
+- 只有用户明确提出多版本、上下游或实现差异对比时，才增加版本矩阵和差异路径。
+- 区分源码直接证据、运行验证、合理推断和未验证假设。
 
-## 2. Maintain the coverage map
+### `review`：检索和巩固已有学习
 
-Track every unit as one of:
+- 用于复习已学内容，优先读取用户指定或最新的相关学习记录。
+- 不先展示原答案，先通过闭卷复述、推导或迁移问题进行检索。
+- 根据回答定位遗忘和误解，只补充暴露出的缺口，不重新完整教学已掌握内容。
+- 纠错后要求重新提取或换场景迁移，验证修正后的模型。
+- 结束时记录掌握情况、仍需复习的节点和下次建议复习时间。
 
-```text
-planned -> teaching -> covered -> checked -> passed | needs-review | deferred
-```
+### `debrief`：从已完成工作中提炼经验
 
-Mark at most one unit `teaching` at a time. Use `covered` when the explanation
-is complete but the learner has not yet demonstrated it; a later synthesis may
-check several covered units together. Briefly show the ledger after creating
-or materially revising the map and at major milestones. Include the current
-phase and unit, completed units, remaining planned units, parking-lot count,
-and any user-specified time or turn boundary. This ledger is the session's
-global state; use it to prevent local follow-ups from erasing the finish line.
+- 用于实现、调试、评审或调查工作完成后的复盘。
+- 以实际 diff、源码、测试、日志和决策过程为证据，不重新执行原交付任务。
+- 聚焦目标、关键决策、错误假设、转折点、验证方式和可复用经验。
+- 通过 Why 和 What-if 检查用户是否理解设计取舍，而不是教授完整背景课程。
+- 结束产物是证据支持的经验总结、反模式和后续改进建议。
 
-Before advancing, run a continuity check:
+## 自动结束
 
-- Define every new term before relying on it.
-- Confirm or teach the prerequisites for the next unit.
-- Connect the next unit to the previous one explicitly.
-- Separate verified evidence, inference, and unverified assumptions.
-- Ensure the next step still contributes to a declared objective.
+满足任一条件时结束：
 
-Insert a labeled bridge unit when a missing prerequisite blocks the path.
-Revise the map explicitly; if the bridge is substantial, make it a new planned
-phase or replace a lower-priority unit instead of silently expanding scope.
+- 所有必学阶段完成，并完成最终整合检查；
+- 用户指定的时间或轮次边界到达；
+- 用户要求停止、直接给答案或返回交付工作；
+- 必要证据无法获得；
+- 调整支架后仍无法继续取得进展。
 
-## 3. Teach continuous units
+结束状态使用 `complete`、`partial`、`stopped` 或 `blocked`。总结最终学习地图、核心心智模型、证据与推断、纠正的误解、未解决问题、待学习内容和闭卷复习题。完成最后一个阶段后直接结束，不新增阶段，也不问“接下来学什么”。
 
-Complete a coherent causal unit before checking understanding:
+## 自动落盘
 
-1. Locate the unit in the global map.
-2. State the prerequisite or bridge from the previous unit.
-3. Explain the mechanism with a concrete example.
-4. Show the reasoning chain as `evidence -> intermediate mechanism ->
-   conclusion -> boundary`.
-5. Ask a milestone question or related question set only when the answers test
-   a declared objective.
-6. Correct the answers and update the ledger with the evidence gained.
+所有实质学习会话在结束时自动保存，除非用户明确禁止写文件。尚未开始教学的短暂澄清不生成记录。
 
-Do not make the user infer from facts or syntax that have not been taught. Do
-not split one missing explanation into a long sequence of micro-questions.
-Require generation before revealing an answer only at declared checkpoints;
-do not withhold prerequisites or direct clarifications.
+路径优先级：
 
-Never repeat the same checkpoint unchanged. When the learner struggles, change
-the scaffold, example, representation, or question type. If successive rounds
-stop producing new evidence or forward progress, mark the unit `needs-review`,
-defer it, or close as `partial` instead of continuing an unproductive loop.
+1. 用户指定目录；
+2. 相关 Git 仓库根目录（否则当前工作目录）下的 `learning-notes/<YYYY>/`。
 
-For evidence-backed claims:
-
-- Call a claim `verified` only when a cited file/symbol, test, trace, log, or
-  experiment directly supports it.
-- Call a runtime claim inferred from static code an inference, not verified
-  behavior.
-- When evidence is unavailable, state the assumption and the smallest useful
-  verification step instead of presenting a conclusion as fact.
-- Ground debrief conclusions in the actual diff, files, tests, or logs from the
-  completed work.
-
-### Coding continuity rules
-
-First establish the relevant version or revision and trace one representative
-path end to end before teaching variants. Cover the applicable parts of this
-ordered lens:
-
-```text
-trigger and entry
--> dispatch or branch selection
--> caller/callee chain
--> data and shape transformations
--> state owner and lifecycle
--> output, persistence, or side effect
--> failure boundary and tests
-```
-
-For every semantic edge across functions or files, name:
-
-- the caller and callee;
-- the control condition that selects the edge;
-- the data or state passed across it;
-- the transformation performed there;
-- the evidence for the edge and why it matters.
-
-Collapse transparent forwarding only when it performs no meaningful binding,
-dispatch, mapping, mutation, synchronization, persistence, or export. Name the
-omitted region and say why collapsing it is safe. Never use “then,” “eventually,”
-or an ellipsis to skip a semantic edge.
-
-Keep versions and mutually exclusive branches separate. Use a version or path
-matrix before comparing them. When the user asks “where did that happen?” or
-points out a missing step, treat it as a continuity failure: rewind to the last
-understood node, repair the edge, update the map, and do not append another
-unrelated checkpoint in the same response. A focused repair question set is
-allowed when it directly verifies the repaired edge.
-
-## 4. Control scope
-
-Classify each follow-up before answering:
-
-- A clarification inside a must-cover unit: answer it within that unit without
-  creating another objective, then resume the current unit or close.
-- A required prerequisite: add a labeled bridge and revise the map.
-- An adjacent but nonessential topic: give at most a brief orientation and put
-  it in the parking lot.
-- An explicit request to expand scope: show what will be added or replaced and
-  revise the map and phase boundaries before teaching it.
-
-A user's ordinary follow-up question is not by itself permission to keep
-expanding the course. Never invent “one more key point” after the original
-completion criteria are met. If the user says they need an out-of-scope topic
-now, accept that as explicit expansion after one concise impact statement; do
-not repeatedly resist them.
-
-## 5. Close automatically
-
-Enter `Close` when any of these conditions holds:
-
-- every must-cover phase and unit in the declared scope has been addressed and
-  the final integration check is complete;
-- a user-specified time or turn boundary is reached;
-- repeated, changed scaffolds on the same blocking gap no longer produce new
-  evidence or forward progress;
-- necessary evidence cannot be obtained;
-- the user asks to stop, requests a direct answer, or returns to delivery work.
-
-If a checkpoint remains unresolved but does not block later units, mark it
-`needs-review` and continue through the remaining planned map. If it blocks
-later units and a different scaffold no longer creates progress, explain the
-missing bridge and close with `partial` status.
-
-At the end of each planned phase, use a closed-book synthesis prompt to
-consolidate that phase. It may contain several tightly related subquestions or
-required elements that jointly reconstruct the target mental model. If planned
-phases remain, update the ledger and continue to the next one. After the final
-phase, correct briefly and close immediately. Do not invent another phase,
-offer an open-ended continuation, or ask “what next?” Closing with incomplete
-mastery is allowed; boundaryless remediation is not.
-
-Produce a closing synthesis containing:
-
-- status: `complete`, `partial`, `stopped`, or `blocked`;
-- the final coverage map;
-- a compact mental model and, in coding mode, the continuous source path;
-- verified evidence, explicit inferences, and unresolved assumptions;
-- misconceptions corrected;
-- parking-lot items and remaining gaps;
-- a compact set of closed-book retrieval prompts and a suggested review date.
-
-## 6. Persist the session record
-
-Persist every substantive session automatically when entering `Close`, unless
-the user explicitly forbids file writes.
-
-Choose the record location in this order:
-
-1. an explicit user-provided directory;
-2. `<workspace-root>/learning-notes/<YYYY>/`, where the workspace root is the
-   relevant Git root or otherwise the current working directory.
-
-Create one immutable file per session. Use the filename pattern:
+使用常规文件编辑能力创建独立文件：
 
 ```text
 YYYY-MM-DD-HHMMSS-<topic-slug>-<mode>.md
 ```
 
-Never overwrite or append to an earlier record. For review sessions, create a
-new record and link the earlier record with `review_of`.
+不覆盖或追加旧记录。Review 模式新建记录并通过 `review_of` 指向原记录。记录包含：模式、状态、目标与范围、学习地图、桥接知识、核心心智模型、证据与推断、纠正的误解、未解决问题、复习题和建议复习时间。Coding 模式可记录 branch、commit、tag 等元数据；用户未明确要求时不生成版本差异分析。不要记录秘密、环境变量或大段原始日志。
 
-Read `references/session-note-template.md`, synthesize the record rather than
-copying the transcript, and avoid secrets, environment values, or large raw
-logs. Preserve source revisions and evidence paths when code is involved.
-
-Resolve `scripts/save_learning_note.py` relative to this skill directory and
-pass the finished Markdown body through standard input or `--body-file`. The
-script creates directories, selects a collision-free name, writes atomically,
-and prints the absolute path. Supply `--source-revision`, `--review-of`, and
-`--next-review` when applicable.
-
-If the script is unavailable, use the normal file-editing tool with the same
-path, schema, and no-overwrite rule. If writing fails, report the real error,
-show the intended path, and include the complete Markdown in the response so
-the user can save it. Never claim that a record was saved when it was not.
-
-End the final response with the actual saved path and no teaching question.
-Do not modify `LEARNING.md`, alter `.gitignore`, commit, or push records during
-a study session unless the user explicitly requests it.
-
-## Mode-specific adjustments
-
-### Learn
-
-- For an unfamiliar topic, teach a complete worked example before retrieval.
-- For partial familiarity, use hints and partial completion.
-- For strong familiarity, emphasize derivation, comparison, and transfer.
-
-### Review
-
-- Locate the user-selected or latest relevant session record.
-- Read metadata, retrieval prompts, and unresolved gaps first; do not reveal
-  the mental model or answer key before the user's attempt.
-- Ask the relevant retrieval prompts in coherent batches across as many rounds
-  as the declared review scope needs.
-- Give corrective feedback after each response; change the scaffold rather
-  than repeating an unproductive prompt unchanged.
-- Create a new review record with the result and next review date.
-
-### Coding
-
-- Let the user predict only after the necessary source context is visible.
-- Verify predictions with the smallest useful test, trace, or experiment.
-- Finish each planned phase with a closed-code reconstruction or diagram.
-
-### Debrief
-
-- Enter only after the implementation task has been completed and verified.
-- Ask focused, related Why and What-if questions across the planned debrief
-  scope; use multiple rounds when the scope genuinely requires them.
-- Record only evidence-backed design lessons, corrected misconceptions,
-  reusable conclusions, and review prompts.
-
-## Hard constraints
-
-- Batch questions only when they belong to the same unit or objective; split
-  them when feedback from one answer is needed before asking the next.
-- Never quiz an unstated prerequisite or use repeated explanation as retrieval.
-- Every checkpoint must advance a named unit in the declared map; never extend
-  the map silently.
-- Do not use round count alone as a reason to stop a large, still-progressing
-  planned curriculum.
-- Never cross a missing semantic edge in a source walkthrough.
-- Never present an inference or assumption as verified evidence.
-- Never continue teaching after `Close`; persist and stop.
+写入失败时报告真实错误和预期路径，并在回复中给出完整记录内容；不得声称已经保存。最终回复给出实际保存路径，不再提出教学问题。除非用户明确要求，不修改 `.gitignore`，不提交或推送学习记录。

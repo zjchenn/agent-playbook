@@ -1,62 +1,51 @@
-# LEARNING.md | Pedagogical principles
+# LEARNING.md｜认知与学习协议
 
-`SKILL.md` is the authoritative session procedure. This file explains the
-principles behind it and must not redefine budgets, state transitions, or
-storage behavior.
+> **目标：**形成能独立提取、解释、辨别和迁移的心智模型。
+> **完成标准：**不看资料时，能说清楚“是什么、为什么、何时适用、条件改变后会怎样”。“看过、看懂、感觉熟悉”不算掌握。
 
-## Mastery standard
+## 核心原则
 
-The learner should be able to reconstruct, explain, distinguish, and transfer
-the model without looking at the source. “I saw it,” “it felt familiar,” and “I
-followed the explanation” are not sufficient evidence of mastery.
+1. **间隔检索是主线**
+   输入后关掉资料，用复述、推导、画图、举例或做题主动回忆；随后隔一段时间再次回忆。可默认在当下、1 天、3 天、7 天、14 天复现，再按表现调整间隔。
 
-## Principles
+2. **先生成，再看答案**
+   在所需前置知识已经给出或确认掌握后，先预测、尝试和解释，暴露缺口后再获取提示或答案。保留“形成猜测 → 验证 → 发现冲突 → 修正模型”的过程，不让资料或 Agent 全部代劳。
 
-1. **Map before detail.** A learner needs a visible destination, dependency
-   order, and finish line. Local explanations are easier to integrate when
-   their position in the whole is explicit.
+3. **建立因果模型**
+   固定追问：**What（是什么）→ Why（为什么）→ What if（条件改变会怎样）**；补充例子、反例、边界条件，并与相近概念比较。
 
-2. **Continuity before compression.** Concision is useful only after the causal
-   bridges are present. Define terms before use, connect evidence to mechanism
-   and conclusion, and make important abstraction crossings explicit.
+4. **反馈后立即重取**
+   使用闭环：**Retrieve → Check → Correct → Retrieve again**。不仅知道哪里错，还要解释为什么错，并马上用自己的话重答。
 
-3. **Generate at meaningful checkpoints.** Prediction and retrieval expose
-   gaps, but asking the learner to guess an untaught prerequisite only creates
-   noise. Teach enough structure first, then ask for reconstruction,
-   derivation, comparison, or transfer. Ask a compact series of related
-   questions together when they exercise the same mental model; separate them
-   when feedback from an earlier answer should change the next question.
+5. **让困难适度，让支架渐退**
+   完全陌生或负荷过高时先看一个完整示例，再逐步变成补步骤、半独立、完全独立。掌握基础后混合相近题型、改变场景以训练迁移；保护专注和睡眠。
 
-4. **Correct and retrieve with progress.** Use `Retrieve -> Check -> Correct ->
-   Retrieve again`, changing the scaffold or representation when needed. The
-   boundary is not a fixed attempt count: continue while rounds create new
-   evidence, and mark the gap for review when repeated variations stop making
-   progress.
+## 默认学习闭环
 
-5. **Build causal models.** Connect What, Why, and What-if with examples,
-   counterexamples, boundary conditions, and comparisons. Do not recurse on
-   these prompts after the declared objective has been tested.
+1. 明确当前阶段的问题及掌握标准；大主题拆成多个有边界的阶段。
+2. 获取最少必要输入，或学习一个高质量示例。
+3. 关掉资料，独立复述、推导、作图或解决问题。
+4. 由 Agent 提出一个关键问题或一组紧密相关的问题，按 What → Why → What if 深挖；当前一问会影响下一问时分轮提问，卡住时使用提示阶梯。
+5. 对照可靠资料，纠错后重新回答。
+6. 压缩为一页心智模型、3～5 个检索问题和待验证缺口，并在后续间隔中闭卷复现。
 
-6. **Fade scaffolding.** Give novices a worked example, partially familiar
-   learners hints and partial completion, and experienced learners more
-   independent derivation and transfer.
+## Agent 行为约定
 
-7. **Be honest about evidence.** Static source, runtime traces, tests, and
-   assumptions support different strengths of claims. Teaching confidence must
-   not exceed the evidence.
+当我显式调用本 skill 或要求进入教学模式时：
 
-8. **End to consolidate.** Closure is part of learning. Compress the session
-   into a mental model, retrieval prompts, corrected misconceptions, and known
-   gaps, then stop before adjacent curiosity dissolves the original boundary.
+- 先检查所需前置知识是否已经给出或确认掌握；缺失时先补齐，不让我猜测未教内容。
+- 前置知识满足后，先让我陈述当前理解或做一次尝试，不默认倾倒完整长文。
+- 可一次提出一个关键问题或一组紧密相关的问题；优先暴露误解，而不是过早公布答案。
+- 提示按“小线索 → 方向 → 局部步骤 → 完整答案”渐进提供。
+- 纠错后要求我重新解释；最后用迁移题而非定义题检查掌握。
+- 会话结束时给出 3～5 个闭卷问题，并指出最值得间隔复现的内容。
+- 根据基础调整支架：新手多示例，熟练后减少提示、增加独立生成。
+- 若我明确要求“直接给答案、赶时间或完成交付”，退出教学模式。
 
-9. **Use spaced retrieval.** A default sequence is 1, 3, 7, 14, and 30 days.
-   Adjust it based on performance and preserve the next date in the session
-   record.
+## Coding 学习补充
 
-## Coding-specific rationale
-
-Code understanding requires more than finding symbols. Follow control flow,
-data transformations, shapes, state ownership and lifecycle, design decisions,
-side effects, and failure boundaries. Trace one concrete path end to end before
-comparing versions or alternate branches. A passing test confirms behavior only
-within its exercised boundary; it does not by itself explain the design.
+- 在必要源码上下文已经给出后，先自己读代码并形成粗糙模型，再让 Agent 查漏补缺；Agent 文档是参考材料，不是最终笔记。
+- 固定检查：**入口/出口、调用链、核心数据结构、shape、状态归属与生命周期、设计决策、失败边界**。
+- 在运行或单步前先预测，再用测试、日志和调试器验证；“跑通”不等于“理解”。
+- 关掉代码画调用图/数据流图，并解释为什么这样设计、改变顺序/规模/配置/并行条件后会怎样。
+- 一轮可采用：**20 分钟读代码 → 10 分钟写模型 → 20 分钟反问 → 10 分钟验证 → 10 分钟闭卷复述**。
