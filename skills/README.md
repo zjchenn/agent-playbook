@@ -1,17 +1,27 @@
 # Skills Collection
 
-## learning
+## mastery-arc
+
+`mastery-arc` 是原 `learning` skill 的后继名称。它把一次学习组织成有明确
+起点、依赖地图、结束条件和落盘记录的完整弧线。
 
 ### 安装
 
 ```shell
 mkdir -p ~/.codex/skills ~/.claude/skills
 
-ln -s $PWD/skills/learning \
-  ~/.codex/skills/learning
+ln -s "$PWD/skills/mastery-arc" \
+  ~/.codex/skills/mastery-arc
 
-ln -s $PWD/skills/learning \
-  ~/.claude/skills/learning
+ln -s "$PWD/skills/mastery-arc" \
+  ~/.claude/skills/mastery-arc
+```
+
+从旧名称迁移时，确认旧路径是符号链接后再移除：
+
+```shell
+test -L ~/.codex/skills/learning && unlink ~/.codex/skills/learning
+test -L ~/.claude/skills/learning && unlink ~/.claude/skills/learning
 ```
 
 ### 如何使用
@@ -24,8 +34,11 @@ ln -s $PWD/skills/learning \
 | `debrief` | 工作已由 Agent 完成 | 提炼原理、根因和可迁移经验    |
 
 ```shell
-$learning learn FSDP2，重点是参数生命周期和通信。
-$learning coding 读这次 fused_moe 重构，先让我自己 trace。
-$learning review MTP，不要先讲。
-$learning debrief 刚才修好的乱码问题。
+$mastery-arc learn FSDP2，重点是参数生命周期和通信。
+$mastery-arc coding 读这次 fused_moe 重构，先梳理完整调用链。
+$mastery-arc review MTP，不要先讲。
+$mastery-arc debrief 刚才修好的乱码问题。
 ```
+
+每次实质性学习结束时，会默认在当前学习工作区的
+`learning-notes/<YYYY>/` 下生成一份不可覆盖的 Markdown 记录。

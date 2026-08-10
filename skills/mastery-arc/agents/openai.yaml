@@ -1,0 +1,4 @@
+interface:
+  display_name: "Mastery Arc"
+  short_description: "Plan, teach, close, and save learning sessions"
+  default_prompt: "Use $mastery-arc coding to help me understand this code path end to end."
