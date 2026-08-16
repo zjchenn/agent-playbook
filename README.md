@@ -23,3 +23,7 @@ ln -sf "$PWD/pi/extensions/opencode-usage.ts" ~/.pi/agent/extensions/opencode-us
 ```
 
 具体步骤见各子目录的 README。
+
+## License
+
+[MIT](LICENSE) © 2026 zjchenn
