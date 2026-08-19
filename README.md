@@ -9,7 +9,7 @@
 | 目录 | 内容 | 安装说明 |
 |------|------|----------|
 | [`skills/`](skills/README.md) | agent 技能（如 `mastery-arc` 教学模式），供 Claude Code / Codex / pi 等使用 | [skills/README.md](skills/README.md) |
-| [`pi/`](pi/README.md) | pi（coding agent）的主题与扩展（`/usage` 套餐用量查询） | [pi/README.md](pi/README.md) |
+| [`pi/`](pi/README.md) | pi（coding agent）的配置：主题、扩展（`/usage` 用量查询、`/plan` plan 模式 + 子代理拆分）与子代理定义 | [pi/README.md](pi/README.md) |
 
 ## 快速开始
 
@@ -20,6 +20,9 @@ ln -sf "$PWD/skills/mastery-arc" ~/.claude/skills/mastery-arc
 # pi 主题与扩展
 ln -sf "$PWD/pi/themes/april-dark.json" ~/.pi/agent/themes/april-dark.json
 ln -sf "$PWD/pi/extensions/opencode-usage.ts" ~/.pi/agent/extensions/opencode-usage.ts
+ln -sfn "$PWD/pi/extensions/plan-mode" ~/.pi/agent/extensions/plan-mode
+mkdir -p ~/.pi/agent/agents
+for f in "$PWD"/pi/agents/*.md; do ln -sf "$f" ~/.pi/agent/agents/$(basename "$f"); done
 ```
 
 具体步骤见各子目录的 README。

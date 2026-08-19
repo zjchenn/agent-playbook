@@ -8,6 +8,7 @@
 ```
 pi/
 ├── settings.json            # 参考设置（theme: april-dark）；见下方说明，勿整份覆盖
+├── agents/                  # 子代理定义（scout/planner/worker/reviewer），供 plan-mode 使用
 ├── themes/                  # TUI 主题（april-dark 为当前主题）
 │   ├── april-dark.json
 │   ├── catppuccin.json
@@ -15,7 +16,15 @@ pi/
 │   ├── nord.json
 │   └── tokyo-night.json
 └── extensions/
-    └── opencode-usage.ts    # /usage 命令：查询 OpenCode Go 套餐用量限额
+    ├── opencode-usage.ts    # /usage 命令：查询 OpenCode Go 套餐用量限额
+    └── plan-mode/           # /plan 模式：自动/手动触发 + 按难度拆分 subagent
+        ├── index.ts
+        ├── subagent.ts      # subagent 工具（单发/并行/链式）
+        ├── agents.ts        # 子代理发现
+        ├── complexity.ts    # 复杂度打分（自动触发）
+        ├── utils.ts         # Plan 解析 + bash 只读白名单
+        ├── state.ts         # 共享状态 + 配置
+        └── README.md        # 完整文档（含配置与卸载）
 ```
 
 ## 安装
@@ -36,6 +45,15 @@ ln -sf "$PWD/pi/themes/tokyo-night.json"  ~/.pi/agent/themes/tokyo-night.json
 
 # 扩展（软链，不要 cp 拷贝）
 ln -sf "$PWD/pi/extensions/opencode-usage.ts" ~/.pi/agent/extensions/opencode-usage.ts
+
+# plan 模式（目录软链）
+ln -sfn "$PWD/pi/extensions/plan-mode" ~/.pi/agent/extensions/plan-mode
+
+# 子代理定义（plan 模式的 subagent 工具会读取 ~/.pi/agent/agents）
+mkdir -p ~/.pi/agent/agents
+for f in "$PWD"/pi/agents/*.md; do
+  ln -sf "$f" ~/.pi/agent/agents/$(basename "$f")
+done
 ```
 
 ### 方式 ②：项目内自动加载（可选）
@@ -100,11 +118,25 @@ Monthly   ░░░░░░░░░░  0% ok   重置 2026/9/15 15:32
 
 使用非默认 endpoint 时，卡片会额外显示一行 `endpoint: <url>`。
 
+## plan 模式（/plan）
+
+```shell
+/plan                      # 进入 plan 模式（只读调研 + 规划）
+/plan 重构登录模块          # 进入 plan 模式并直接开始规划
+```
+
+- **自动触发**：任务复杂度打分超过阈值（默认 8）时自动询问是否进入 plan 模式。
+- **子代理拆分**：规划产出 `Plan:` + `Subagent split:`，执行时按难度自动拆分 ——
+  独立步骤并行派 worker、依赖步骤链式派 worker、收尾派 reviewer。
+- 详细文档见 [extensions/plan-mode/README.md](extensions/plan-mode/README.md)。
+
 ### 卸载
 
 ```shell
 unlink ~/.pi/agent/themes/april-dark.json      # 按安装过的链接逐个移除
 unlink ~/.pi/agent/extensions/opencode-usage.ts
+unlink ~/.pi/agent/extensions/plan-mode
+unlink ~/.pi/agent/agents/scout.md             # 以及其他已链接的 agents/*.md
 ```
 
 若全局侧当初是 `cp` 真实拷贝而非软链，直接 `rm` 删除即可。
