@@ -1,7 +1,7 @@
 # opencode 配置（主题）
 
-本目录是 [opencode](https://opencode.ai) TUI 配置的**源目录**，与 `pi/`、`skills/` 平行的
-分发源：仓库内唯一一份，通过软链装到 `~/.config/opencode/` 对应位置。
+本目录是 [opencode](https://opencode.ai) TUI 配置的**源目录**：仓库内唯一一份，
+通过软链装到 `~/.config/opencode/` 对应位置。
 
 ## 目录结构
 
@@ -13,7 +13,7 @@ opencode/
 
 ## 安装
 
-全局生效（推荐，与 `pi/`、`skills/` 的安装方式一致）：
+全局生效（推荐）：
 
 ```shell
 mkdir -p ~/.config/opencode/themes
