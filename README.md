@@ -12,21 +12,10 @@
 | [`pi/`](pi/README.md) | pi（coding agent）的配置：主题、扩展（`/usage` 用量查询、`/plan` plan 模式 + 子代理拆分）与子代理定义 | [pi/README.md](pi/README.md) |
 | [`opencode/`](opencode/README.md) | opencode TUI 的配置：主题（april-dark，从 pi 版移植） | [opencode/README.md](opencode/README.md) |
 
-## 快速开始
+## 安装
 
-```shell
-# 技能（以 mastery-arc 为例）
-ln -sf "$PWD/skills/mastery-arc" ~/.claude/skills/mastery-arc
-
-# pi 主题与扩展
-ln -sf "$PWD/pi/themes/april-dark.json" ~/.pi/agent/themes/april-dark.json
-ln -sf "$PWD/pi/extensions/opencode-usage.ts" ~/.pi/agent/extensions/opencode-usage.ts
-ln -sfn "$PWD/pi/extensions/plan-mode" ~/.pi/agent/extensions/plan-mode
-mkdir -p ~/.pi/agent/agents
-for f in "$PWD"/pi/agents/*.md; do ln -sf "$f" ~/.pi/agent/agents/$(basename "$f"); done
-```
-
-具体步骤见各子目录的 README。
+- 让 agent 装：发送「读 https://github.com/zjchenn/agent-playbook/blob/master/INSTALL.md ，按它帮我配置」。
+- 手动装：看上表中各组件的 README。
 
 ## License
 
