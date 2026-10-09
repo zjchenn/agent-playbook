@@ -36,18 +36,45 @@ pi install npm:pi-web-search
 { "provider": "opencode-go", "model": "gpt-5.6-luna" }
 ```
 
-### 适配 opencode-go 的 DeepSeek
+### 适配 opencode-go 的 DeepSeek（纯配置）
 
 `opencode-go` 的 DeepSeek 在 pi 模型目录里是 `openai-completions`，pi-web-search
-默认会当成“不支持原生搜索”。实测网关的 `/zen/go/v1/messages`（Anthropic 兼容路由）
-对 DeepSeek 支持 `web_search_20260209`，因此打了个小补丁：把 opencode-go / opencode
-上的 `deepseek*` 识别为 DeepSeek 类型，并保持网关 baseUrl（不重写到 `/anthropic`）。
-打完补丁后直接用当前模型就能搜索：
+默认会当成“不支持原生搜索”。但该网关同时提供 Anthropic 兼容路由
+`/zen/go/v1/messages`，对 DeepSeek 支持 `web_search_20260209`。把这个路由声明成
+一个独立 provider，再用 pi-web-search 自带的 `web-search.json` 指定搜索模型即可，
+**不改第三方源码**，升级/重装插件也不会失效。
 
-```shell
-PKG=~/.pi/agent/npm/node_modules/pi-web-search
-patch -p1 -d "$PKG" < pi/patches/pi-web-search-opencode-deepseek.patch
+`~/.pi/agent/models.json`（新增一个 provider；apiKey 用 `!command` 复用现有凭据）：
+
+```json
+{
+  "providers": {
+    "opencode-go-anthropic": {
+      "name": "OpenCode Go (Anthropic-compatible route)",
+      "baseUrl": "https://opencode.ai/zen/go/v1",
+      "api": "anthropic-messages",
+      "apiKey": "!pi auth print-api-key --provider opencode-go",
+      "models": [
+        {
+          "id": "deepseek-v4.1-flash",
+          "reasoning": true,
+          "thinkingLevelMap": { "off": null, "minimal": null, "low": "low", "medium": null, "high": "high", "xhigh": null, "max": "max" },
+          "input": ["text", "image"],
+          "contextWindow": 1000000,
+          "maxTokens": 384000,
+          "cost": { "input": 0.15, "output": 0.6, "cacheRead": 0.003, "cacheWrite": 0 }
+        }
+      ]
+    }
+  }
+}
 ```
 
-补丁针对 `pi-web-search@1.7.0`；重装/升级该包后需要重新应用（或钉住版本：
-`pi install npm:pi-web-search@1.7.0`）。
+`~/.pi/agent/web-search.json`：
+
+```json
+{ "provider": "opencode-go-anthropic", "model": "deepseek-v4.1-flash" }
+```
+
+对话模型仍是 `opencode-go/deepseek-v4.1-flash`，只有 `web_search` 的请求走该 provider。
+验证：`pi -p --no-session "用 web_search 查一下今天的 UTC 日期"`。
