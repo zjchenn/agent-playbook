@@ -1,0 +1,49 @@
+pi-web-search patch: route OpenCode Go/Zen DeepSeek models through the gateway's
+Anthropic-compatible /messages surface so the native web_search tool works with
+the conversation model (no separate search model needed).
+
+Target: npm:pi-web-search 1.7.0 (package root, patch level -p1)
+
+Apply:
+  PKG=~/.pi/agent/npm/node_modules/pi-web-search
+  patch -p1 -d "$PKG" < pi/patches/pi-web-search-opencode-deepseek.patch
+
+Re-apply after reinstall/upgrade of the package. Verify with:
+  pi auth check --model opencode-go/deepseek-v4.1-flash
+  pi -p --no-session "用 web_search 查一下今天的 UTC 日期"
+
+--- a/src/providers/config.ts
++++ b/src/providers/config.ts
+@@ -83,8 +83,16 @@
+     }
+ }
+ 
++// OpenCode Go/Zen serve DeepSeek through their Anthropic-compatible /messages
++// surface, which supports the same server-side web_search tool as DeepSeek.
++function isOpenCodeDeepSeek(model: Model<Api>): boolean {
++    if (model.provider !== "opencode-go" && model.provider !== "opencode") return false;
++    return /^deepseek/i.test(model.id);
++}
++
+ export function getProviderKind(model: Model<Api>): ProviderKind {
+     if (model.provider === "deepseek") return "deepseek";
++    if (isOpenCodeDeepSeek(model)) return "deepseek";
+     if (model.provider === "antigravity" || model.api === "antigravity") return "google";
+     if (GOOGLE_PROVIDERS[model.provider] || GOOGLE_PROVIDERS[model.api]) return "google";
+     if (isOllamaModel(model)) return "ollama";
+--- a/src/providers/anthropic.ts
++++ b/src/providers/anthropic.ts
+@@ -26,6 +26,13 @@
+ // Preserve a configured proxy origin/path instead of sending its credentials elsewhere.
+ export function resolveDeepSeekBaseUrl(baseUrl: string): string {
+     const base = baseUrl.replace(/\/+$/, "");
++    // OpenCode gateways already expose the Anthropic-compatible surface at
++    // <base>/messages; do not send their credentials to DeepSeek's /anthropic path.
++    try {
++        if (new URL(base).hostname.endsWith("opencode.ai")) return base;
++    } catch {
++        // Fall through to the generic DeepSeek handling for non-URL bases.
++    }
+     if (/\/anthropic(?:\/v1)?$/.test(base)) return base;
+     return `${base.replace(/\/v1$/, "")}/anthropic`;
+ }

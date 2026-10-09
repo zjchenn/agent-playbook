@@ -35,3 +35,19 @@ pi install npm:pi-web-search
 ```json
 { "provider": "opencode-go", "model": "gpt-5.6-luna" }
 ```
+
+### 适配 opencode-go 的 DeepSeek
+
+`opencode-go` 的 DeepSeek 在 pi 模型目录里是 `openai-completions`，pi-web-search
+默认会当成“不支持原生搜索”。实测网关的 `/zen/go/v1/messages`（Anthropic 兼容路由）
+对 DeepSeek 支持 `web_search_20260209`，因此打了个小补丁：把 opencode-go / opencode
+上的 `deepseek*` 识别为 DeepSeek 类型，并保持网关 baseUrl（不重写到 `/anthropic`）。
+打完补丁后直接用当前模型就能搜索：
+
+```shell
+PKG=~/.pi/agent/npm/node_modules/pi-web-search
+patch -p1 -d "$PKG" < pi/patches/pi-web-search-opencode-deepseek.patch
+```
+
+补丁针对 `pi-web-search@1.7.0`；重装/升级该包后需要重新应用（或钉住版本：
+`pi install npm:pi-web-search@1.7.0`）。
