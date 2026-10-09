@@ -1,1 +1,6 @@
-{ "theme": "april-dark" }
+{
+  "theme": "april-dark",
+  "defaultProvider": "opencode-go",
+  "defaultModel": "deepseek-v4.1-flash",
+  "defaultThinkingLevel": "max"
+}

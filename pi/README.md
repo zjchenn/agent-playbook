@@ -45,13 +45,21 @@ ln -s "$PWD/pi" .pi
 ### settings.json 说明
 
 `pi/settings.json` 是**参考设置**，不要整份覆盖全局 `~/.pi/agent/settings.json`
-（会丢掉你机器的 provider / model 等配置）。只需要把主题行合进去：
+（会丢掉你机器已有的 provider / model 凭据等）。把下面这些键合进去：
 
 ```json
-{ "theme": "april-dark" }
+{
+  "theme": "april-dark",
+  "defaultProvider": "opencode-go",
+  "defaultModel": "deepseek-v4.1-flash",
+  "defaultThinkingLevel": "max"
+}
 ```
 
-或者直接 `/settings` 里切换主题。
+主题也可以在 `/settings` 里切换；默认模型与思考等级在 `/model`、`/thinking`
+里调整（`Ctrl+S` 可保存为新的默认值）。
+
+`deepseek-v4.1-flash` 的联网搜索需要额外配置，见 [plugins.md](plugins.md#联网搜索)。
 
 > **不要 `cp`**：pi 对「两个不同扩展文件注册同名命令」会做去重
 > （如 `/usage` 变成 `/usage:1`、`/usage:2`），此时原命令不会被调度。
@@ -59,7 +67,8 @@ ln -s "$PWD/pi" .pi
 
 ## 验证
 
-在 `/settings` 中能看到并选择 `april-dark`。
+在 `/settings` 中能看到并选择 `april-dark`，`/model` 默认为 `deepseek-v4.1-flash`，
+`/thinking` 默认为 `max`。
 
 ## 卸载
 
