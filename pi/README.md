@@ -10,14 +10,16 @@
 pi/
 ├── settings.json   # 参考设置；勿整份覆盖，见下方说明
 ├── themes/         # TUI 主题
-├── agents/         # 子代理定义，由 plan-mode 使用
 └── extensions/     # 扩展，见下方「扩展」
 ```
 
 ## 扩展
 
 - [`/usage`](extensions/opencode-usage.md)
-- [`plan-mode`](extensions/plan-mode/README.md)
+
+## 外部插件
+
+plan 模式、子代理委派、联网搜索由 npm 插件提供，安装与配置约定见 [plugins.md](plugins.md)。
 
 ## 安装主题
 
