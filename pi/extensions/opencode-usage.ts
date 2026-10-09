@@ -27,7 +27,7 @@ const WINDOW_ORDER = ["rolling", "weekly", "monthly"];
 
 interface UsageWindow {
   status?: string;
-  percent?: number; // 0..1
+  percent?: number; // 0..100（接口直接返回百分数，如 2 表示 2%）
   resetsAt?: string;
 }
 
@@ -110,7 +110,7 @@ async function resolveEndpoint(
 }
 
 function pct(w?: UsageWindow): number {
-  return Math.round((w?.percent ?? 0) * 100);
+  return Math.max(0, Math.min(100, Math.round(w?.percent ?? 0)));
 }
 
 function bar(pct: number): string {
